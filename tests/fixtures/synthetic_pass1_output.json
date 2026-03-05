@@ -1,0 +1,30 @@
+{
+  "_note": "Synthetic Pass 1 blind analysis output for testing.",
+  "dataset_id": "SYNTH001",
+  "strand": "IPA",
+  "run_label": "pass1_blind",
+  "timestamp_utc": "2025-10-01T09:00:00Z",
+  "pass1_themes": [
+    {
+      "theme_id": "T1",
+      "label": "Difficulty articulating distress",
+      "candidate_statements": ["felt like too much to explain", "didn't know where to start"],
+      "participant_codes": ["P01"],
+      "excerpt_count": 2
+    },
+    {
+      "theme_id": "T2",
+      "label": "Anticipation of not being understood",
+      "candidate_statements": ["no one would quite understand what I meant"],
+      "participant_codes": ["P01"],
+      "excerpt_count": 1
+    },
+    {
+      "theme_id": "T3",
+      "label": "Ambivalence about help-seeking",
+      "candidate_statements": ["wanted help but didn't want to need it"],
+      "participant_codes": ["P01"],
+      "excerpt_count": 1
+    }
+  ]
+}

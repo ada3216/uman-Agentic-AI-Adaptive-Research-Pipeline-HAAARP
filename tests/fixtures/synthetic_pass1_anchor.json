@@ -1,0 +1,11 @@
+{
+  "_note": "Synthetic pass1_anchor for testing. anchor_type is osf_doi (not local) as required for Pass 2.",
+  "pass1_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "artifact_path": "tests/fixtures/synthetic_pass1_output.json",
+  "timestamp_utc": "2025-10-01T09:30:00Z",
+  "operator_id": "https://orcid.org/0000-0000-0000-0000",
+  "pre_registration_doi": "10.17605/OSF.IO/EXAMPLE",
+  "strand": "IPA",
+  "anchor_type": "osf_doi",
+  "anchor_value": "https://osf.io/example"
+}

@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Evidence Review Record",
+  "description": "Schema for per-claim human evidence review records. human_verdict is set ONLY by review_cli.py.",
+  "type": "object",
+  "required": ["claim_id", "run_id", "dataset_id", "strand", "claim_text", "support_strength", "human_verdict"],
+  "properties": {
+    "claim_id":          { "type": "string" },
+    "run_id":            { "type": "string" },
+    "dataset_id":        { "type": "string" },
+    "strand": {
+      "type": "string",
+      "enum": ["IPA", "PDA", "TA", "quant", "mixed"],
+      "description": "Required indexed field on every artifact."
+    },
+    "generated_by":      { "type": "string" },
+    "claim_text":        { "type": "string", "description": "Read-only. grounding_checker must not modify this." },
+    "supporting_segments": { "type": "array", "items": { "type": "string" } },
+    "verified_segments":   { "type": "array", "items": { "type": "string" } },
+    "support_count":     { "type": "integer", "minimum": 0 },
+    "distinct_participants": { "type": "array", "items": { "type": "string" } },
+    "support_strength": {
+      "type": "string",
+      "enum": ["strong", "moderate", "weak", "none"],
+      "description": "strong: >=3 excerpts AND >=3 participants. moderate: 2/2. weak: 1/1. none: 0."
+    },
+    "verification_flags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "low_evidence_count",
+          "lens_vocabulary_only",
+          "overgeneralisation",
+          "excerpt_not_found",
+          "excerpt_does_not_support",
+          "single_participant_only",
+          "prosody_anchor_unverified",
+          "timecode_anchor_unverified"
+        ]
+      }
+    },
+    "human_verdict": {
+      "description": "Set ONLY by review_cli.py. Never set by any AI process.",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["verdict", "reviewer_id", "reviewer_role", "timestamp_utc"],
+          "properties": {
+            "verdict": { "type": "string", "enum": ["accept", "accept_with_revision", "reject", "recheck"] },
+            "reviewer_id": {
+              "type": "string",
+              "description": "ORCID (https://orcid.org/...) or institutional username. Not null, not anonymous."
+            },
+            "reviewer_role": { "type": "string", "enum": ["researcher", "supervisor", "team_member"] },
+            "timestamp_utc": { "type": "string", "format": "date-time" },
+            "revised_claim_text": { "type": ["string", "null"] },
+            "notes": { "type": ["string", "null"] },
+            "interpretive_proposition": {
+              "type": "boolean",
+              "description": "True when claim accepted despite support_strength weak or none."
+            },
+            "write_up_template": {
+              "type": ["string", "null"],
+              "description": "Template sentence for findings write-up when interpretive_proposition: true."
+            }
+          }
+        }
+      ]
+    }
+  }
+}

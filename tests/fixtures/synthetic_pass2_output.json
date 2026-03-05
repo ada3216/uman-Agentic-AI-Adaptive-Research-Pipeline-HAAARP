@@ -1,0 +1,39 @@
+{
+  "_note": "Synthetic Pass 2 positioned analysis output for testing. Mix of supported and unsupported claims.",
+  "dataset_id": "SYNTH001",
+  "strand": "IPA",
+  "run_label": "seed42",
+  "timestamp_utc": "2025-10-01T14:00:00Z",
+  "claims": [
+    {
+      "claim_id": "CL001",
+      "claim_text": "Participants consistently struggled to articulate their distress, suggesting an underlying experience of shame around help-seeking.",
+      "supporting_segments": ["P01_session1_seg_001", "P01_session1_seg_003"],
+      "confidence": "moderate"
+    },
+    {
+      "claim_id": "CL002",
+      "claim_text": "The anticipation of not being understood functioned as a relational barrier to disclosure.",
+      "supporting_segments": ["P01_session1_seg_002"],
+      "confidence": "weak"
+    },
+    {
+      "claim_id": "CL003",
+      "claim_text": "Participants universally reported feeling judged by all professional services they encountered.",
+      "supporting_segments": ["P01_session1_seg_NONEXISTENT"],
+      "confidence": "low"
+    },
+    {
+      "claim_id": "CL004",
+      "claim_text": "Moments of felt attunement were described through embodied language, including references to breathing and physical relief.",
+      "supporting_segments": ["P01_session1_seg_005"],
+      "confidence": "moderate"
+    },
+    {
+      "claim_id": "CL005",
+      "claim_text": "Ambivalence about needing help was expressed through paradoxical constructions.",
+      "supporting_segments": ["P01_session1_seg_004"],
+      "confidence": "moderate"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+# Secrets — never committed
+config/secrets.yaml
+*.env
+.env.*
+
+# Raw participant data — never committed
+artifacts/raw_archive/
+*_participant_code_map.json
+*_code_map.json
+
+# HTML source files and Word docs (source originals — not needed in repo)
+html-archive/
+*.docx
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db

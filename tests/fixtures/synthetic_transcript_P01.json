@@ -1,0 +1,14 @@
+{
+  "_note": "Synthetic de-identified transcript for testing — not real participant data.",
+  "transcript_id": "synth_P01_session1",
+  "participant_code": "P01",
+  "session": "session1",
+  "strand": "IPA",
+  "segments": [
+    {"segment_id": "P01_session1_seg_001", "speaker": "P01", "start_time": "00:01:12", "end_time": "00:01:28", "text": "I suppose I just didn't know where to start, really. It felt like too much to explain."},
+    {"segment_id": "P01_session1_seg_002", "speaker": "P01", "start_time": "00:02:05", "end_time": "00:02:19", "text": "There was this kind of... I don't know. A sense that no one would quite understand what I meant."},
+    {"segment_id": "P01_session1_seg_003", "speaker": "P01", "start_time": "00:03:44", "end_time": "00:04:01", "text": "I kept thinking I should just get on with it. Not make a fuss."},
+    {"segment_id": "P01_session1_seg_004", "speaker": "P01", "start_time": "00:05:22", "end_time": "00:05:38", "text": "It's strange because I wanted help but I also didn't want to need it, if that makes sense."},
+    {"segment_id": "P01_session1_seg_005", "speaker": "P01", "start_time": "00:07:01", "end_time": "00:07:19", "text": "When she actually listened — really listened — I felt like I could breathe properly for the first time in weeks."}
+  ]
+}

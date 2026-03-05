@@ -1,0 +1,59 @@
+{
+  "_comment": "Example of a completed, locked lens JSON. Use as reference for lens_dialogue.py output format.",
+  "_note": "Synthetic example — all content is illustrative.",
+  "lens_id": "lens_EXAMPLE_RUN001",
+  "version": "v1",
+  "timestamp_utc": "2025-10-15T14:30:00Z",
+  "researcher_id": "https://orcid.org/0000-0000-0000-0000",
+  "researcher_signature": "https://orcid.org/0000-0000-0000-0000",
+  "researcher_role": "researcher",
+  "signature_timestamp_utc": "2025-10-15T14:45:00Z",
+  "prereg_doi": "10.17605/OSF.IO/EXAMPLE",
+  "strand": "IPA",
+  "pass1_anchor": {
+    "pass1_hash": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+    "anchor_type": "osf_doi",
+    "anchor_value": "https://osf.io/example"
+  },
+  "dialogue_transcript_path": "artifacts/lens_dialogue_EXAMPLE_RUN001.txt",
+  "theoretical_orientation": "Constructivist phenomenological approach, informed by Merleau-Ponty's embodied cognition. I understand experience as always already shaped by the body, context, and relational field. I attend to what is said and how it is said — rhythm, hesitation, and qualification carry meaning for me.",
+  "clinical_orientation": "Seven years as an integrative therapist working primarily with adults experiencing depression and relational difficulty. I notice I am drawn to rupture and repair moments, and to how clients narrate causality — who or what they make responsible for their suffering.",
+  "primary_hypotheses": [
+    {
+      "hypothesis": "Participants will describe a tension between wanting to be understood and expecting not to be",
+      "in_prereg": true
+    },
+    {
+      "hypothesis": "Help-seeking language will be hedged or qualified in ways that indicate shame",
+      "in_prereg": true
+    },
+    {
+      "hypothesis": "The therapeutic relationship will be described through metaphors of proximity and distance",
+      "in_prereg": false,
+      "posthoc_flag": "This hypothesis emerged during Pass 1 review and was not in the pre-registration. Flagged as post-hoc."
+    }
+  ],
+  "lens_vocabulary": [
+    "rupture", "repair", "embodied", "hedging", "qualification",
+    "shame", "help-seeking", "proximity", "distance", "relational field"
+  ],
+  "explicit_exclusions": [
+    "Diagnostic categorisation or symptom-matching",
+    "Attribution of theoretical constructs not named by participants",
+    "Comparison between participants at this stage"
+  ],
+  "evidence_standard": {
+    "require_excerpt_count": 2,
+    "generalisation_threshold": "minimum 2 distinct participants"
+  },
+  "vulnerable_groups_power_dynamics": "Yes — clients in an ongoing therapeutic relationship with the researcher-therapist. Power differential is significant. Participants may present experiences as more positive than felt to manage the relationship.",
+  "expected_participant_indirection": "Expect significant hedging, qualification, and displacement of distress onto third parties or past events rather than direct expression in the session context.",
+  "pass1_surprises": "I was struck by how often participants named specific sensory details — temperature, texture, sound — when describing moments of connection or disconnection. I had not anticipated this as a prominent feature and had not included embodied sensation in my pre-registered hypotheses. This feels significant and I want to attend to it in Pass 2 without over-interpreting from my embodied theory background.",
+  "posthoc_hypothesis_flags": [
+    "Proximity/distance metaphor hypothesis was not in pre-registration — flagged as post-hoc"
+  ],
+  "lens_summary": "I bring a constructivist phenomenological frame, attentiveness to relational dynamics and embodied experience, and clinical sensitivity to shame and hedging in help-seeking language. I will attend to sensory and embodied description as an emergent feature. I will hold the post-hoc proximity/distance hypothesis lightly and mark it as interpretive proposition if evidential support is weak.",
+  "lens_summary_hash": "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3",
+  "researcher_confirmation": true,
+  "locked": true
+}

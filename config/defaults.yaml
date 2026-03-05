@@ -1,0 +1,33 @@
+# Pipeline configuration
+# No secrets committed here — credentials go in config/secrets.yaml (gitignored)
+# or in environment variables.
+
+model:
+  provider: local                    # local | (hosted only if NOT special_category data)
+  backend: ollama                    # ollama | llamacpp
+  model_name: qwen2.5-27b-instruct
+  api_base: http://localhost:11434   # Ollama default endpoint
+  temperature: 0.3
+  deterministic_temperature: 0.0    # used for the deterministic stability run
+  seeds: [42, 99, 123]
+
+# VALID VALUES: public_text | personal_non_sensitive | special_category
+# "normal" is NOT valid — it silently bypasses the DPIA gate
+sensitivity: personal_non_sensitive
+
+pre_registration_doi: null           # Set before Pass 1; logged as warning if null
+
+study:
+  strand: null                       # IPA | PDA | TA | quant | mixed — required indexed field
+  team_structure: solo               # solo | team
+  academic_level: masters            # masters | phd | lab
+
+stability_testing:
+  seeded_reruns: 3
+  deterministic_run: true
+  alternate_model_optional: false    # set true for phd/lab only
+
+osf:
+  deposit_required: true             # pass1 anchor MUST be deposited before Pass 2
+  osf_api_base: https://api.osf.io/v2
+  # OSF token: set OSF_TOKEN environment variable — never put it here

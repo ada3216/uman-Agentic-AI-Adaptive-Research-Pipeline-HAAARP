@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Pipeline Audit Schema",
+  "description": "Master schema for all audit artifacts in the agentic research pipeline.",
+  "version": "1.0",
+  "definitions": {
+    "strand": {
+      "type": "string",
+      "enum": ["IPA", "PDA", "TA", "quant", "mixed"],
+      "description": "Required indexed field on every pipeline artifact."
+    },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "iso8601": { "type": "string", "format": "date-time" },
+    "orcid_or_username": {
+      "type": "string",
+      "description": "ORCID (https://orcid.org/...) or institutional username. Not null, not anonymous."
+    }
+  },
+  "artifacts": {
+    "pass1_anchor": {
+      "required": ["pass1_hash", "artifact_path", "timestamp_utc", "strand", "anchor_type", "anchor_value"],
+      "properties": {
+        "pass1_hash":          { "$ref": "#/definitions/sha256" },
+        "artifact_path":       { "type": "string" },
+        "timestamp_utc":       { "$ref": "#/definitions/iso8601" },
+        "operator_id":         { "$ref": "#/definitions/orcid_or_username" },
+        "pre_registration_doi":{ "type": ["string", "null"] },
+        "strand":              { "$ref": "#/definitions/strand" },
+        "anchor_type": {
+          "type": "string",
+          "enum": ["local", "osf_doi", "repo_accession"],
+          "description": "local is temporary only. Must be upgraded to osf_doi before Pass 2."
+        },
+        "anchor_value": { "type": ["string", "null"] }
+      }
+    },
+    "lens_record": {
+      "required": ["lens_id", "strand", "locked", "researcher_signature", "lens_summary_hash"],
+      "properties": {
+        "strand":                   { "$ref": "#/definitions/strand" },
+        "locked":                   { "type": "boolean" },
+        "researcher_signature":     { "$ref": "#/definitions/orcid_or_username" },
+        "researcher_role":          { "type": "string", "enum": ["researcher", "supervisor", "team_member"] },
+        "signature_timestamp_utc":  { "$ref": "#/definitions/iso8601" },
+        "lens_summary_hash":        { "$ref": "#/definitions/sha256" },
+        "posthoc_hypothesis_flags": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "audit_bundle_metadata": {
+      "required": ["bundle_id", "bundle_sha256", "pass1_hash", "pass1_anchor_type",
+                   "strand_labels", "human_verdicts_complete", "reviewer_ids"],
+      "properties": {
+        "bundle_sha256":            { "$ref": "#/definitions/sha256" },
+        "pass1_anchor_type": {
+          "type": "string",
+          "enum": ["osf_doi", "repo_accession"],
+          "description": "local is not acceptable in a completed audit bundle."
+        },
+        "strand_labels":            { "type": "array", "items": { "$ref": "#/definitions/strand" } },
+        "human_verdicts_complete":  { "type": "boolean" },
+        "interpretive_propositions":{ "type": "array", "items": { "type": "string" } },
+        "hallucination_rate":       { "type": "number", "minimum": 0, "maximum": 1 },
+        "theme_stability_score":    { "type": ["number", "null"] },
+        "jaccard_mean":             { "type": ["number", "null"] },
+        "lens_amplification_index": { "type": ["number", "null"] },
+        "reviewer_ids":             { "type": "array", "items": { "$ref": "#/definitions/orcid_or_username" } }
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      MOCK_LLM: "true"   # CRITICAL: all LLM calls are mocked — no live model runs in CI
+                          # Never set this to false in CI. No API keys needed.
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install pytest flake8 pyyaml
+
+      - name: Lint
+        run: flake8 src/ tests/ --max-line-length=100 --ignore=E501,W503
+
+      - name: Run tests (mocked LLM only — no network, no live model)
+        run: make test

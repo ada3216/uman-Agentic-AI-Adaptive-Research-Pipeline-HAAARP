@@ -1,0 +1,51 @@
+{
+  "_comment": "Example completed DPIA sign-off record. Copy to artifacts/dpia_signed.json and replace all fields.",
+  "_note": "Synthetic example for CI testing only. Real records must be signed by your institutional DPO.",
+  "schema_version": "1.0",
+  "document_type": "dpia_signed",
+  "study_title": "Example Study — AI-Assisted Qualitative Analysis [SYNTHETIC]",
+  "pre_registration_doi": "10.17605/OSF.IO/EXAMPLE",
+  "ethics_committee_id": "ETHICS-2025-EXAMPLE-001",
+  "researcher_name": "Example Researcher",
+  "researcher_orcid": "https://orcid.org/0000-0000-0000-0000",
+  "institution": "Example University",
+  "sensitivity_class": "special_category",
+  "gdpr_lawful_basis": "Article 9(2)(a) — Explicit consent for research purposes",
+  "data_types_processed": [
+    "audio recordings of therapy sessions",
+    "de-identified transcripts",
+    "AI-generated analysis outputs (no personal data)"
+  ],
+  "ai_processing_statement": "All AI processing is conducted locally on researcher-controlled hardware. No participant data is transmitted to external APIs or cloud services.",
+  "local_execution_confirmed": true,
+  "encryption_at_rest": true,
+  "encryption_standard": "AES-256",
+  "access_controls": {
+    "raw_data_access": ["researcher", "supervisor"],
+    "deidentified_data_access": ["researcher", "supervisor"],
+    "ai_output_access": ["researcher", "supervisor"]
+  },
+  "retention_periods": {
+    "audio_recordings": "deleted after transcription verified",
+    "deidentified_transcripts": "5 years post-study completion",
+    "ai_outputs": "5 years post-study completion",
+    "audit_bundle": "10 years post-study completion"
+  },
+  "breach_protocol_documented": true,
+  "participant_withdrawal_procedure_documented": true,
+  "risk_assessment": {
+    "re_identification_risk": "low (enhanced pseudonymisation applied)",
+    "data_leak_risk": "low (local processing, no cloud upload)",
+    "ai_hallucination_risk": "mitigated (grounding verification + human evidence review)"
+  },
+  "dpo_sign_off": {
+    "dpo_name": "Example DPO Name",
+    "dpo_email": "dpo@example.ac.uk",
+    "decision": "approved",
+    "conditions": "none",
+    "signature_date": "2025-09-01",
+    "signature_timestamp_utc": "2025-09-01T09:00:00Z"
+  },
+  "dpia_complete": true,
+  "document_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+}
