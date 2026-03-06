@@ -10,6 +10,11 @@ import sys
 import json
 from pathlib import Path
 
+# Allow sibling src/ packages to be imported when run from repo root
+_SRC = Path(__file__).parent.parent
+if str(_SRC) not in sys.path:
+    sys.path.insert(0, str(_SRC))
+
 
 ERROR_CODES = {
     "ERR_PREFLIGHT_MISSING": 1,
@@ -37,8 +42,13 @@ def pipeline_error(code: str, message: str, action: str) -> None:
 
 class Orchestrator:
     def __init__(self, config_path: str = "config/defaults.yaml"):
-        # TODO: load config from yaml
-        self.config = {}
+        try:
+            import yaml
+            with open(config_path) as f:
+                self.config = yaml.safe_load(f) or {}
+        except FileNotFoundError:
+            print(f"[WARN] Config file not found: {config_path}. Proceeding with empty config.")
+            self.config = {}
         self.config_path = config_path
 
     def check_preflight(self) -> None:
@@ -98,9 +108,113 @@ class Orchestrator:
             )
 
     def run_pipeline(self, dataset_path: str) -> None:
-        """Run the full pipeline in sequence. Each step is a hard gate."""
-        # TODO: implement full pipeline orchestration
-        # Stage order: preflight → sensitivity check → ingest → deid →
-        #   pass1 → prompt_osf_deposit → lens_dialogue → lens_lock →
-        #   pass2 (after anchor confirmed) → grounding → human_review → audit_bundle
-        print("TODO: implement pipeline orchestration")
+        """Run the full pipeline in sequence. Each step is a hard gate.
+
+        Stage order:
+          0 — preflight         check required documents exist
+          1 — sensitivity       gate DPIA if special_category
+          2 — ingest + deid     archive raw data, apply de-identification
+          3 — Pass 1            blind analysis, write anchor, prompt OSF deposit
+          4 — lens dialogue     researcher reflexivity interview (interactive)
+            [pipeline pauses — researcher locks lens, upgrades OSF anchor]
+          5 — Pass 2            lens-informed analysis, 4 stability runs
+          6 — grounding check   verify claim citations against transcript
+          7 — human review      researcher sets verdicts via review_cli
+          8 — audit bundle      emit signed audit package
+
+        Stages 5–8 require a separate invocation after the researcher has:
+          - locked the lens:   python src/modules/lens_dialogue.py --lock ...
+          - upgraded anchor:   python src/modules/osf_uploader.py --anchor ... --doi ...
+        """
+        from modules.ingest_and_deid import ingest, deidentify, spot_check_prompt
+        from agent.pass1_runner import run_pass1
+        from modules.lens_dialogue import run_lens_dialogue
+
+        # Stage 0 — preflight
+        print("\n[Stage 0] Preflight checks...")
+        self.check_preflight()
+
+        # Stage 1 — sensitivity + DPIA gate
+        sensitivity = self.config.get("sensitivity", "")
+        print(f"[Stage 1] Sensitivity: {sensitivity or '(not set)'}")
+        self.check_sensitivity(sensitivity)
+
+        # Stage 2 — ingest + de-id
+        print(f"\n[Stage 2] Ingesting: {dataset_path}")
+        ingest_result = ingest(dataset_path)
+        archive_path = ingest_result["archive_path"]
+        dataset_id = ingest_result["dataset_id"]
+
+        # De-identification: participant_code_map from config (or empty — researcher fills later)
+        participant_code_map = self.config.get("participant_code_map", {})
+        participant_code = self.config.get("participant_code", f"P{dataset_id}")
+        session_label = self.config.get("session_label", "session1")
+        deid_result = deidentify(archive_path, participant_code_map, participant_code, session_label)
+        deid_path = deid_result["deid_path"]
+
+        spot_check_prompt(deid_path)
+
+        # Stage 3 — Pass 1 (blind analysis)
+        print("\n[Stage 3] Running Pass 1 — blind analysis...")
+        pass1_result = run_pass1(deid_path, self.config)
+        pass1_output_path = pass1_result["pass1_output_path"]
+        anchor_path = pass1_result["anchor_path"]
+        anchor_id = Path(anchor_path).stem.split("_")[-1]
+
+        # Stage 4 — Lens dialogue (interactive; pipeline pauses after)
+        print("\n[Stage 4] Lens dialogue — researcher reflexivity interview...")
+        run_lens_dialogue(self.config, pass1_output_path)
+
+        print("\n" + "=" * 60)
+        print("PIPELINE PAUSED — RESEARCHER ACTION REQUIRED")
+        print("=" * 60)
+        print("\nBefore Pass 2 can run:")
+        print("  1. Deposit Pass 1 output to OSF and upgrade the anchor:")
+        print(f"     python src/modules/osf_uploader.py --anchor {anchor_path} --doi [DOI]")
+        print("  2. Lock your lens record:")
+        print("     python src/modules/lens_dialogue.py --lock \\")
+        print(f"       --run-id {anchor_id} --researcher-id [orcid]")
+        print("\nThen run Pass 2:")
+        print("  python src/agent/pass2_runner.py \\")
+        print(f"    --deid {deid_path} --lens artifacts/lens_{anchor_id}.json \\")
+        print(f"    --pass1-hash {pass1_result['pass1_hash']} --dataset-id {anchor_id}")
+        print()
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="HAAARP pipeline orchestrator",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "--check-preflight",
+        action="store_true",
+        help="Verify required documents exist and exit.",
+    )
+    parser.add_argument(
+        "--dataset",
+        metavar="PATH",
+        help="Path to raw de-identified dataset JSON to process.",
+    )
+    parser.add_argument(
+        "--config",
+        default="config/defaults.yaml",
+        metavar="PATH",
+        help="Path to pipeline config YAML (default: config/defaults.yaml).",
+    )
+    args = parser.parse_args()
+
+    orc = Orchestrator(config_path=args.config)
+
+    if args.check_preflight:
+        orc.check_preflight()
+        print("[OK] All preflight documents found.")
+        sys.exit(0)
+
+    if args.dataset:
+        orc.run_pipeline(args.dataset)
+    else:
+        parser.print_help()
+        sys.exit(1)

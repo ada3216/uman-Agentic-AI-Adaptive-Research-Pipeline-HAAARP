@@ -93,26 +93,91 @@ def run_pass2(deid_path: str, lens_path: str, pass1_hash: str,
     """
     _gate_check(deid_path, lens_path, pass1_hash, dataset_id, config)
 
-    # TODO: load pass2_system_prompt.txt
-    # TODO: inject lens_summary from lens JSON
-    # TODO: run 4 passes via Ollama REST API
+    # ── Path setup so sibling src/ packages are importable ────────────────────
+    import sys as _sys
+    _src = Path(__file__).parent.parent
+    if str(_src) not in _sys.path:
+        _sys.path.insert(0, str(_src))
+    from modules.ollama_client import call_generate  # noqa: E402
 
+    # ── Load system prompt ─────────────────────────────────────────────────────
+    prompt_path = _src / "prompts" / "pass2_system_prompt.txt"
+    if not prompt_path.exists():
+        print("[ERR_PREFLIGHT_MISSING] src/prompts/pass2_system_prompt.txt not found.")
+        print("Action: Ensure pass2_system_prompt.txt exists in src/prompts/")
+        sys.exit(1)
+    system_prompt = prompt_path.read_text()
+
+    # ── Inject lens_summary from locked lens JSON ──────────────────────────────
+    with open(lens_path) as f:
+        lens = json.load(f)
+    lens_summary = lens.get("lens_summary", "")
+    strand = config.get("study", {}).get("strand") or lens.get("strand", "")
+
+    # ── Load de-identified data ────────────────────────────────────────────────
+    with open(deid_path) as f:
+        data_content = json.load(f)
+
+    model_cfg = config.get("model", {})
+    determ_temp = config.get("stability_testing", {}).get(
+        "deterministic_temperature",
+        model_cfg.get("deterministic_temperature", 0.0),
+    )
+
+    # ── Run 4 stability passes ─────────────────────────────────────────────────
     outputs = []
-    for label, seed in [("seed42", 42), ("seed99", 99), ("seed123", 123), ("deterministic", None)]:
+    for label, seed, temp in [
+        ("seed42", 42, model_cfg.get("temperature", 0.3)),
+        ("seed99", 99, model_cfg.get("temperature", 0.3)),
+        ("seed123", 123, model_cfg.get("temperature", 0.3)),
+        ("deterministic", None, determ_temp),
+    ]:
+        user_prompt = (
+            f"Researcher Lens Summary:\n{lens_summary}\n\n"
+            f"Dataset strand: {strand}\n\n"
+            f"Data:\n{json.dumps(data_content, indent=2)}"
+        )
+        raw_response = call_generate(
+            api_base=model_cfg.get("api_base", "http://localhost:11434"),
+            model=model_cfg.get("model_name", "qwen2.5-27b-instruct"),
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            temperature=temp,
+            seed=seed,
+        )
+        try:
+            llm_output = json.loads(raw_response)
+        except json.JSONDecodeError:
+            llm_output = {}
+
         out_path = f"artifacts/pass2_output_{label}_{dataset_id}.json"
-        # TODO: actual LLM call with seed / temperature=0 for deterministic
         with open(out_path, "w") as f:
             json.dump({
                 "dataset_id": dataset_id,
-                "strand": config.get("study", {}).get("strand"),
+                "strand": strand,
                 "run_label": label,
                 "seed": seed,
                 "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-                "claims": [],  # TODO: fill from LLM output
+                "claims": llm_output.get("claims", []),
             }, f, indent=2)
         outputs.append(out_path)
 
     stability = compute_stability_metrics(outputs)
+
+    # ── Lens amplification index: proportion of pass2 claims using lens vocab ──
+    lens_vocab = [v.lower() for v in lens.get("lens_vocabulary", [])]
+    if lens_vocab and outputs:
+        # Use the seed42 (primary) output for this measure
+        with open(outputs[0]) as f:
+            primary = json.load(f)
+        claims = primary.get("claims", [])
+        if claims:
+            lens_supported = sum(
+                1 for c in claims
+                if any(v in c.get("claim_text", "").lower() for v in lens_vocab)
+            )
+            stability["lens_amplification_index"] = round(lens_supported / len(claims), 4)
+
     stability_path = f"artifacts/stability_report_{dataset_id}.json"
     with open(stability_path, "w") as f:
         json.dump(stability, f, indent=2)
@@ -127,12 +192,80 @@ def run_pass2(deid_path: str, lens_path: str, pass1_hash: str,
 def compute_stability_metrics(output_paths: list) -> dict:
     """
     Computes theme stability, Jaccard overlap, lens amplification index.
-    TODO: implement comparison logic across 4 output files.
+
+    theme_stability_score = proportion of distinct themes appearing in >= 2/3 of runs.
+    jaccard_mean          = mean |A∩B|/|A∪B| across all run pairs.
+    lens_amplification_index is not computable here (no lens vocab available);
+    it is filled by pass2_runner.run_pass2() if a lens is present.
     """
+    loaded = []
+    for path in output_paths:
+        if Path(path).exists():
+            with open(path) as f:
+                loaded.append(json.load(f))
+
+    if len(loaded) < 2:
+        return {
+            "theme_stability_score": None,
+            "jaccard_mean": None,
+            "jaccard_pairs": [],
+            "lens_amplification_index": None,
+            "unstable_themes": [],
+        }
+
+    def _claim_keys(output: dict) -> set:
+        """Extract a set of short, normalised keys from claims or themes."""
+        items = output.get("claims", []) or output.get("pass2_themes", [])
+        keys = set()
+        for item in items:
+            label = (item.get("label") or item.get("claim_text") or "").strip()
+            if label:
+                keys.add(label[:80].lower())
+        return keys
+
+    label_sets = [_claim_keys(o) for o in loaded]
+
+    # ── Pairwise Jaccard scores ────────────────────────────────────────────────
+    pairs = []
+    for i in range(len(label_sets)):
+        for j in range(i + 1, len(label_sets)):
+            a, b = label_sets[i], label_sets[j]
+            if not a and not b:
+                score = 1.0
+            elif not a or not b:
+                score = 0.0
+            else:
+                score = len(a & b) / len(a | b)
+            pairs.append({
+                "run_a": loaded[i].get("run_label", f"run_{i}"),
+                "run_b": loaded[j].get("run_label", f"run_{j}"),
+                "jaccard": round(score, 4),
+            })
+
+    jaccard_mean = round(
+        sum(p["jaccard"] for p in pairs) / len(pairs), 4
+    ) if pairs else None
+
+    # ── Theme stability ────────────────────────────────────────────────────────
+    all_labels: set = set()
+    for ls in label_sets:
+        all_labels |= ls
+
+    stability_threshold = max(2, round(len(label_sets) * 2 / 3))
+    stable = []
+    unstable = []
+    for label in sorted(all_labels):
+        count = sum(1 for ls in label_sets if label in ls)
+        (stable if count >= stability_threshold else unstable).append(label)
+
+    theme_stability_score = (
+        round(len(stable) / len(all_labels), 4) if all_labels else None
+    )
+
     return {
-        "theme_stability_score": None,  # TODO: proportion of themes stable across >=2/3 runs
-        "jaccard_mean": None,  # TODO: mean |A∩B|/|A∪B| across run pairs
-        "jaccard_pairs": [],  # TODO: per-pair scores
-        "lens_amplification_index": None,  # TODO: new Pass2 obs supported only by lens vocab
-        "unstable_themes": [],  # TODO: themes in <2/3 runs; labelled provisional
+        "theme_stability_score": theme_stability_score,
+        "jaccard_mean": jaccard_mean,
+        "jaccard_pairs": pairs,
+        "lens_amplification_index": None,  # filled by run_pass2 if lens vocab present
+        "unstable_themes": unstable,
     }

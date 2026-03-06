@@ -45,19 +45,52 @@ def run_pass1(deid_path: str, config: dict) -> dict:
         print("Action: Set study.strand to: IPA | PDA | TA | quant | mixed")
         sys.exit(5)
 
-    # TODO: load pass1_system_prompt.txt
-    # TODO: call Ollama REST API (POST config['model']['api_base'] + '/api/generate')
-    # TODO: write pass1_output with strand field
+    # ── Path setup so sibling src/ packages are importable ────────────────────
+    _src = Path(__file__).parent.parent
+    if str(_src) not in sys.path:
+        sys.path.insert(0, str(_src))
+    from modules.ollama_client import call_generate  # noqa: E402
 
+    # ── Load system prompt ─────────────────────────────────────────────────────
+    prompt_path = _src / "prompts" / "pass1_system_prompt.txt"
+    if not prompt_path.exists():
+        print("[ERR_PREFLIGHT_MISSING] src/prompts/pass1_system_prompt.txt not found.")
+        print("Action: Ensure pass1_system_prompt.txt exists in src/prompts/")
+        sys.exit(1)
+    system_prompt = prompt_path.read_text()
+
+    # ── Load de-identified data ────────────────────────────────────────────────
+    with open(deid_path) as f:
+        data_content = json.load(f)
+    user_prompt = f"Dataset strand: {strand}\n\nData:\n{json.dumps(data_content, indent=2)}"
+
+    # ── Call local model ───────────────────────────────────────────────────────
+    model_cfg = config.get("model", {})
+    raw_response = call_generate(
+        api_base=model_cfg.get("api_base", "http://localhost:11434"),
+        model=model_cfg.get("model_name", "qwen2.5-27b-instruct"),
+        system_prompt=system_prompt,
+        user_prompt=user_prompt,
+        temperature=model_cfg.get("temperature", 0.3),
+    )
+
+    # ── Parse LLM output ───────────────────────────────────────────────────────
+    try:
+        llm_output = json.loads(raw_response)
+    except json.JSONDecodeError:
+        llm_output = {}
+    pass1_themes = llm_output.get("pass1_themes", [])
+
+    # ── Write pass1_output ─────────────────────────────────────────────────────
     output_path = f"artifacts/pass1_output_{dataset_id}.json"
-    # TODO: write actual output
     Path("artifacts").mkdir(exist_ok=True)
     with open(output_path, "w") as f:
         json.dump({
             "dataset_id": dataset_id,
             "strand": strand,
+            "run_label": "pass1_blind",
             "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-            "pass1_themes": [],  # TODO: fill from LLM output
+            "pass1_themes": pass1_themes,
         }, f, indent=2)
 
     pass1_hash = _sha256_file(output_path)

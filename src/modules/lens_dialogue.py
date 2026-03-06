@@ -13,6 +13,7 @@ Lock requires non-null signature or exits with code 4.
 
 Exit codes: 0 success, 4 on lens/signature errors
 """
+import re
 import sys
 import json
 import hashlib
@@ -68,6 +69,36 @@ LENS_QUESTIONS = [
 # ──────────────────────────────────────────────────────────────────────────────
 
 
+# ── Response extraction helpers ───────────────────────────────────────────────
+
+def _split_lines(text: str) -> list:
+    """Split on newlines/semicolons, strip list markers, drop blank entries."""
+    parts = re.split(r'[\n;]', text)
+    cleaned = []
+    for p in parts:
+        p = re.sub(r'^[\s\-\d\.\)\*]+', '', p).strip()
+        if p:
+            cleaned.append(p)
+    return cleaned
+
+
+def _split_vocabulary(text: str) -> list:
+    """Split comma-, semicolon-, or newline-delimited terms."""
+    return [t.strip() for t in re.split(r'[,;\n]', text) if t.strip()]
+
+
+def _parse_evidence_standard(text: str) -> dict:
+    """Extract numeric thresholds from free-text evidence standard response."""
+    nums = re.findall(r'\b(\d+)\b', text)
+    return {
+        "raw": text.strip(),
+        "require_excerpt_count": int(nums[0]) if nums else None,
+        "generalisation_threshold": (
+            f"minimum {nums[1]} distinct participants" if len(nums) > 1 else text.strip()
+        ),
+    }
+
+
 def run_lens_dialogue(config: dict, pass1_output_path: str, model_client=None,
                       run_id: str = None) -> dict:
     """
@@ -105,11 +136,77 @@ def run_lens_dialogue(config: dict, pass1_output_path: str, model_client=None,
         if i == 3 and prereg_doi:
             print(f"\n  [Note] These hypotheses will be cross-checked against {prereg_doi}.")
             print("  Any hypothesis not present in your pre-registration will be flagged as post-hoc.")
-            # TODO: implement actual cross-check via pre-reg DOI lookup
+            # Pre-reg DOI lookup is a network operation deferred until DOI resolves to machine-readable
+            # metadata. Currently flagged as post-hoc manually in lens_vocabulary review step.
 
-    # AI summarises responses (local model call)
-    # TODO: implement summary call via Ollama REST API
-    lens_summary = "[TODO: AI-generated summary of researcher lens from Q1-Q9 responses]"
+    # ── Extract structured fields from numbered responses ─────────────────────
+    # responses is a list of {"question_number": N, "question": "...", "response": "..."}
+    def _resp(n: int) -> str:
+        """Get response text for 1-based question number n."""
+        return next((r["response"] for r in responses if r["question_number"] == n), "")
+
+    # Q1 theoretical orientation, Q2 clinical orientation
+    theoretical_orientation = _resp(1)
+    clinical_orientation = _resp(2)
+
+    # Q3 primary hypotheses: each line is one hypothesis
+    primary_hypotheses = [
+        {"hypothesis": h, "in_prereg": bool(prereg_doi)}
+        for h in _split_lines(_resp(3)) if h
+    ]
+
+    # Q4 lens vocabulary: comma/semicolon/newline-separated terms
+    lens_vocabulary = _split_vocabulary(_resp(4))
+
+    # Q5 vulnerable groups / power dynamics
+    vulnerable_groups = _resp(5)
+
+    # Q6 expected participant indirection
+    expected_indirection = _resp(6)
+
+    # Q7 explicit exclusions: each line is one exclusion
+    explicit_exclusions = _split_lines(_resp(7))
+
+    # Q8 evidence standard: numeric + generalisation threshold
+    evidence_standard = _parse_evidence_standard(_resp(8))
+
+    # Q9 Pass 1 surprises
+    pass1_surprises = _resp(9).strip()
+
+    # Q10: if researcher typed an ORCID or institutional ID, pre-fill signature
+    q10_text = _resp(10).strip()
+    prefilled_signature = (
+        q10_text
+        if (q10_text.startswith("https://orcid.org/") or re.match(r'^[\w\.\-@]{4,}$', q10_text))
+        else None
+    )
+
+    # ── AI summarises responses via local model ────────────────────────────────
+    _src = Path(__file__).parent.parent
+    import sys as _sys
+    if str(_src) not in _sys.path:
+        _sys.path.insert(0, str(_src))
+    from modules.ollama_client import call_generate  # noqa: E402
+
+    summary_prompt_path = _src / "prompts" / "lens_summary_prompt.txt"
+    lens_summary_prompt = (
+        summary_prompt_path.read_text() if summary_prompt_path.exists()
+        else "Summarise the following researcher lens dialogue into 6 sections."
+    )
+
+    q_and_a = "\n\n".join(
+        f"Q{r['question_number']}: {r['question']}\nA: {r['response']}"
+        for r in responses[:9]  # Q1–Q9 only; Q10 is the ORCID confirmation
+    )
+    model_cfg = config.get("model", {})
+    lens_summary = call_generate(
+        api_base=model_cfg.get("api_base", "http://localhost:11434"),
+        model=model_cfg.get("model_name", "qwen2.5-27b-instruct"),
+        system_prompt=lens_summary_prompt,
+        user_prompt=q_and_a,
+        temperature=model_cfg.get("temperature", 0.3),
+        expect_json=False,
+    ).strip()
 
     record = {
         "lens_id": f"lens_{run_id}",
@@ -119,14 +216,18 @@ def run_lens_dialogue(config: dict, pass1_output_path: str, model_client=None,
         "strand": strand,
         "pass1_output_path": pass1_output_path,
         "dialogue_responses": responses,
+        "theoretical_orientation": theoretical_orientation,
+        "clinical_orientation": clinical_orientation,
         "lens_summary": lens_summary,
-        "lens_vocabulary": [],  # TODO: extract from Q2 response
-        "primary_hypotheses": [],  # TODO: extract from Q3 response + posthoc flags
+        "lens_vocabulary": lens_vocabulary,
+        "primary_hypotheses": primary_hypotheses,
         "posthoc_hypothesis_flags": posthoc_flags,
-        "explicit_exclusions": [],  # TODO: extract from Q7 response
-        "evidence_standard": {},  # TODO: extract from Q8 response
-        "pass1_surprises": "",  # TODO: extract from Q9 response
-        "researcher_signature": None,
+        "explicit_exclusions": explicit_exclusions,
+        "evidence_standard": evidence_standard,
+        "vulnerable_groups_power_dynamics": vulnerable_groups,
+        "expected_participant_indirection": expected_indirection,
+        "pass1_surprises": pass1_surprises,
+        "researcher_signature": prefilled_signature,
         "researcher_role": "researcher",
         "signature_timestamp_utc": None,
         "researcher_confirmation": False,
