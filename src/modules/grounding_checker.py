@@ -21,10 +21,10 @@ from pathlib import Path
 
 
 SUPPORT_STRENGTH_THRESHOLDS = {
-    "strong":   {"min_excerpts": 3, "min_participants": 3},
+    "strong": {"min_excerpts": 3, "min_participants": 3},
     "moderate": {"min_excerpts": 2, "min_participants": 2},
-    "weak":     {"min_excerpts": 1, "min_participants": 1},
-    "none":     {"min_excerpts": 0, "min_participants": 0},
+    "weak": {"min_excerpts": 1, "min_participants": 1},
+    "none": {"min_excerpts": 0, "min_participants": 0},
 }
 
 VERIFICATION_FLAGS = [
@@ -34,7 +34,7 @@ VERIFICATION_FLAGS = [
     "excerpt_not_found",
     "excerpt_does_not_support",
     "single_participant_only",
-    "prosody_anchor_unverified",   # audio: timestamp/pause marker not found
+    "prosody_anchor_unverified",  # audio: timestamp/pause marker not found
     "timecode_anchor_unverified",  # video: timecode/frame anchor not found
 ]
 
@@ -200,12 +200,12 @@ def verify_grounding(pass2_output_path: str, transcript_path: str,
             "claims": claim_table_entries,
         }, f, indent=2)
 
-    print(f"\nGrounding check complete.")
+    print("\nGrounding check complete.")
     print(f"  Claims checked:      {len(claims)}")
     print(f"  Hallucination flags: {hallucination_count}")
     print(f"  Evidence table:      {table_path}")
     print(f"  Review records:      {len(review_paths)} files")
-    print(f"\nNext: python src/tools/review_cli.py --dir artifacts/")
+    print("\nNext: python src/tools/review_cli.py --dir artifacts/")
     return {
         "claim_evidence_table_path": table_path,
         "evidence_review_paths": review_paths,

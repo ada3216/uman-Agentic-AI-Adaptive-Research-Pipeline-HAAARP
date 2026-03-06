@@ -20,7 +20,7 @@ Five testing layers:
 4. **Adversarial tests** — deliberate attempts to bypass governance constraints
 5. **Security and hygiene tests** — import scanning, filesystem safety, encoding, format validation
 
-All layers run with `MOCK_LLM=true`. No live model. No network. `make test-local` runs layers 1, 2, and 5. Layer 3 runs via `notebooks/demo_pipeline.ipynb`. Layer 4 runs via `pytest tests/test_adversarial.py`.
+All layers run with `MOCK_LLM=true`. No live model. No network. `make test-local` runs layers 1, 2, and 5. End-to-end execution follows the CLI flow documented in `docs/runbook.md`. Layer 4 runs via `pytest tests/test_adversarial.py`.
 
 ---
 

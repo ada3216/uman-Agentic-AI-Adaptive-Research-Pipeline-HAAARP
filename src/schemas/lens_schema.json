@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Locked Lens Record",
+  "type": "object",
+  "required": [
+    "lens_id",
+    "strand",
+    "locked",
+    "researcher_signature",
+    "researcher_role",
+    "signature_timestamp_utc",
+    "lens_summary",
+    "lens_summary_hash"
+  ],
+  "properties": {
+    "lens_id": {
+      "type": "string"
+    },
+    "version": {
+      "type": ["string", "null"]
+    },
+    "timestamp_utc": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "strand": {
+      "type": "string",
+      "enum": ["IPA", "PDA", "TA", "quant", "mixed"]
+    },
+    "locked": {
+      "type": "boolean"
+    },
+    "researcher_signature": {
+      "type": "string",
+      "minLength": 1
+    },
+    "researcher_role": {
+      "type": "string",
+      "enum": ["researcher", "supervisor", "team_member"]
+    },
+    "signature_timestamp_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "lens_summary": {
+      "type": "string"
+    },
+    "lens_summary_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "posthoc_hypothesis_flags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Stability Metrics Report",
+  "type": "object",
+  "required": [
+    "theme_stability_score",
+    "jaccard_mean",
+    "jaccard_pairs",
+    "lens_amplification_index",
+    "unstable_themes"
+  ],
+  "properties": {
+    "theme_stability_score": {
+      "type": ["number", "null"]
+    },
+    "jaccard_mean": {
+      "type": ["number", "null"]
+    },
+    "jaccard_pairs": {
+      "type": "array",
+      "items": {
+        "type": ["number", "object", "string"]
+      }
+    },
+    "lens_amplification_index": {
+      "type": ["number", "null"]
+    },
+    "unstable_themes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

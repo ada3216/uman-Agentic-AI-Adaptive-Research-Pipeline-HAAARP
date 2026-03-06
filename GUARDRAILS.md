@@ -127,13 +127,16 @@ pandoc docs/lens.html -o docs/lens.md
 | Pipeline-generated artifacts | `artifacts/` |
 | Example/synthetic artifacts | `examples/` |
 | Test fixtures | `tests/fixtures/` |
-| Human documentation | `docs/` — only modify if explicitly instructed |
+| Human documentation | `docs/`, root governance/legal docs, and `implementation docs/` |
 | Configuration | `config/` — `defaults.yaml` committed; `secrets.yaml` gitignored |
+| Repo-specific agents | `.github/agents/` |
 
 Never write to:
-- `/` (repo root) except for `README.md`, `Makefile`, `RELEASE_GUIDE.md`, `COPILOT_INSTRUCTIONS.md`, `GUARDRAILS.md` — these are the only permitted root-level files
+- `/` (repo root) except canonical repo documents such as `README.md`, `LICENSE`, `COMMERCIAL_LICENSE.md`, `HOW_TO_COMPLY.md`, `CONTRIBUTING.md`, `Makefile`, `COPILOT_INSTRUCTIONS.md`, `GUARDRAILS.md`, `.gitignore`, and dependency manifests
 - `examples/` with real participant data
 - `config/` with real credentials
+
+The root governance, licensing, and contributor documents are part of the public contract of the repo. Keep them aligned with `docs/` and `implementation docs/`.
 
 ---
 
@@ -204,6 +207,8 @@ gpg (system)    — Phase 6 lens attestation only
 If a dependency not listed here is needed: check whether it makes external network calls before adding it. If it does, confirm it is not used for participant data before including it. When in doubt, ask before adding.
 
 **Dependency freeze rule:** Do not modify `requirements.txt` or `pyproject.toml` without explicit user confirmation. Adding a package not on the permitted list requires the user to approve it first. State the package name, version, and reason before adding.
+
+Ignore Windows metadata files such as `*:Zone.Identifier` if they appear after copying files into the repository.
 
 ---
 

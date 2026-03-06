@@ -1,0 +1,7 @@
+pyyaml>=6.0
+jsonschema>=4.23
+pytest>=8.0
+flake8>=7.0
+
+# Optional runtime dependency for local audio transcription:
+# whisperx

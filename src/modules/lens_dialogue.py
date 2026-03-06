@@ -86,10 +86,10 @@ def run_lens_dialogue(config: dict, pass1_output_path: str, model_client=None,
     prereg_doi = config.get("pre_registration_doi")
     strand = config.get("study", {}).get("strand")
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("LENS DIALOGUE — Researcher Reflexivity Interview")
     print(f"Run ID: {run_id}  |  Strand: {strand}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print("\nYour responses will be hashed and locked as part of the audit trail.")
     print("The AI will summarise your responses — it does not generate the answers.\n")
 
@@ -120,12 +120,12 @@ def run_lens_dialogue(config: dict, pass1_output_path: str, model_client=None,
         "pass1_output_path": pass1_output_path,
         "dialogue_responses": responses,
         "lens_summary": lens_summary,
-        "lens_vocabulary": [],      # TODO: extract from Q2 response
-        "primary_hypotheses": [],   # TODO: extract from Q3 response + posthoc flags
+        "lens_vocabulary": [],  # TODO: extract from Q2 response
+        "primary_hypotheses": [],  # TODO: extract from Q3 response + posthoc flags
         "posthoc_hypothesis_flags": posthoc_flags,
         "explicit_exclusions": [],  # TODO: extract from Q7 response
-        "evidence_standard": {},    # TODO: extract from Q8 response
-        "pass1_surprises": "",      # TODO: extract from Q9 response
+        "evidence_standard": {},  # TODO: extract from Q8 response
+        "pass1_surprises": "",  # TODO: extract from Q9 response
         "researcher_signature": None,
         "researcher_role": "researcher",
         "signature_timestamp_utc": None,
@@ -184,11 +184,11 @@ def lock_lens(lens_path: str, researcher_id: str,
     # Recompute hash of complete file including the hash field itself
     final_hash = _sha256_file(lens_path)
 
-    print(f"\n[OK] Lens locked.")
+    print("\n[OK] Lens locked.")
     print(f"     Researcher: {researcher_id}")
     print(f"     Timestamp:  {record['signature_timestamp_utc']}")
     print(f"     Hash:       {final_hash}")
-    print(f"\nPass 2 is now unlocked (pending OSF anchor confirmation).")
+    print("\nPass 2 is now unlocked (pending OSF anchor confirmation).")
     return {"lens_hash": final_hash, "locked": True}
 
 
@@ -201,7 +201,9 @@ def _sha256_file(path: str) -> str:
 
 
 if __name__ == "__main__":
-    import argparse, yaml
+    import argparse
+    import yaml
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-id", help="Run ID")
     parser.add_argument("--lock", action="store_true")
@@ -215,7 +217,8 @@ if __name__ == "__main__":
 
     if args.lock:
         if not args.run_id:
-            print("--run-id required for --lock"); sys.exit(1)
+            print("--run-id required for --lock")
+            sys.exit(1)
         lens_path = f"artifacts/lens_{args.run_id}.json"
         lock_lens(lens_path, args.researcher_id or "")
     else:

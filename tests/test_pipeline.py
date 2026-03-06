@@ -7,10 +7,9 @@ No live model, no network access required.
 import json
 import os
 import sys
-import tempfile
 import pytest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -101,7 +100,7 @@ def test_pass2_refuses_when_pass1_anchor_is_local(tmp_artifacts, valid_lens):
         "pass1_hash": "a" * 64,
         "artifact_path": str(tmp_artifacts / "pass1_output_LOCAL.json"),
         "strand": "IPA",
-        "anchor_type": "local",    # ← the condition being tested
+        "anchor_type": "local",  # ← the condition being tested
         "anchor_value": None,
         "pre_registration_doi": None,
     }
@@ -252,13 +251,6 @@ def test_audit_emitter_includes_prereg_doi(tmp_artifacts):
     # This is a structural check on the metadata schema, not a full run
     required_fields = ["pre_registration_doi", "pass1_hash", "strand_labels",
                        "human_verdicts_complete", "reviewer_ids"]
-    import importlib.util, inspect
-    spec = importlib.util.spec_from_file_location(
-        "audit_emitter",
-        str(Path(__file__).parent.parent / "src" / "modules" / "audit_emitter.py")
-    )
-    mod = importlib.util.module_from_spec(spec)
-    src = inspect.getsource(mod.__class__)
     # Check the field names appear in the emitter source
     source = open(str(Path(__file__).parent.parent / "src" / "modules" / "audit_emitter.py")).read()
     for field in required_fields:
@@ -281,17 +273,27 @@ def test_audit_emitter_includes_strand_labels():
 def test_audit_emitter_blocks_if_verdicts_incomplete(tmp_artifacts):
     """audit_emitter must exit(5) if any evidence_review has human_verdict: null."""
     # Write a review file with null verdict
-    review = {"claim_id": "CL_PEND", "strand": "IPA", "claim_text": "x",
-               "support_strength": "none", "human_verdict": None}
+    review = {
+        "claim_id": "CL_PEND",
+        "strand": "IPA",
+        "claim_text": "x",
+        "support_strength": "none",
+        "human_verdict": None,
+    }
     art_dir = tmp_artifacts.parent / "artifacts"
     art_dir.mkdir(exist_ok=True)
     with open(art_dir / "evidence_review_CL_PEND_TEST.json", "w") as f:
         json.dump(review, f)
 
     # Also write a local anchor to trigger ERR_ANCHOR_LOCAL check first
-    anchor = {"pass1_hash": "a"*64, "artifact_path": "x", "strand": "IPA",
-              "anchor_type": "osf_doi", "anchor_value": "https://osf.io/x",
-              "pre_registration_doi": None}
+    anchor = {
+        "pass1_hash": "a" * 64,
+        "artifact_path": "x",
+        "strand": "IPA",
+        "anchor_type": "osf_doi",
+        "anchor_value": "https://osf.io/x",
+        "pre_registration_doi": None,
+    }
     with open(art_dir / "pass1_anchor_TEST.json", "w") as f:
         json.dump(anchor, f)
 
@@ -309,9 +311,14 @@ def test_audit_emitter_blocks_if_anchor_local(tmp_artifacts):
     art_dir = tmp_artifacts.parent / "artifacts"
     art_dir.mkdir(exist_ok=True)
 
-    anchor = {"pass1_hash": "a"*64, "artifact_path": "x", "strand": "IPA",
-              "anchor_type": "local",   # ← the condition
-              "anchor_value": None, "pre_registration_doi": None}
+    anchor = {
+        "pass1_hash": "a" * 64,
+        "artifact_path": "x",
+        "strand": "IPA",
+        "anchor_type": "local",  # ← the condition
+        "anchor_value": None,
+        "pre_registration_doi": None,
+    }
     with open(art_dir / "pass1_anchor_LTEST.json", "w") as f:
         json.dump(anchor, f)
 

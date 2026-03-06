@@ -73,8 +73,8 @@ def run_pass1(deid_path: str, config: dict) -> dict:
         "operator_id": config.get("operator_id", "unknown"),
         "pre_registration_doi": prereg_doi,
         "strand": strand,
-        "anchor_type": "local",   # MUST be upgraded to osf_doi before Pass 2
-        "anchor_value": None,     # filled by osf_uploader.py after deposit
+        "anchor_type": "local",  # MUST be upgraded to osf_doi before Pass 2
+        "anchor_value": None,  # filled by osf_uploader.py after deposit
     }
     anchor_path = f"artifacts/pass1_anchor_{dataset_id}.json"
     with open(anchor_path, "w") as f:
@@ -89,9 +89,9 @@ def prompt_osf_deposit(anchor_path: str) -> None:
     Prints OSF deposit instructions and blocks until researcher confirms.
     This step is REQUIRED before Pass 2 can run.
     """
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("PASS 1 COMPLETE — OSF DEPOSIT REQUIRED BEFORE PASS 2")
-    print("="*60)
+    print("=" * 60)
     print(f"\nAnchor file created: {anchor_path}")
     print("\nTo proceed to Pass 2 you must deposit the Pass 1 output to OSF:")
     print("  1. Go to https://osf.io (or your institutional repository)")

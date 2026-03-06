@@ -8,7 +8,6 @@ This naming pattern is enforced — analysis modules reject files not matching i
 Exit codes: 0 success, 1 on configuration errors
 """
 import sys
-import json
 import uuid
 import hashlib
 import shutil
@@ -86,9 +85,9 @@ def spot_check_prompt(deid_path: str) -> None:
     Prints spot-check reminder and blocks until researcher acknowledges.
     Automated de-identification is imperfect — manual check is required.
     """
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("DE-IDENTIFICATION SPOT CHECK REQUIRED")
-    print("="*60)
+    print("=" * 60)
     print(f"\nDe-identified file: {deid_path}")
     print("\nBefore analysis begins, manually review a sample of the")
     print("de-identified transcript to verify no personal identifiers remain.")

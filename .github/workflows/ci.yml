@@ -17,7 +17,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install pytest flake8 pyyaml
+        run: pip install -r requirements.txt
 
       - name: Lint
         run: flake8 src/ tests/ --max-line-length=100 --ignore=E501,W503

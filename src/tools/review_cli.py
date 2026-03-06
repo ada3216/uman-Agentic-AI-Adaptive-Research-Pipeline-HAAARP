@@ -19,7 +19,6 @@ import sys
 import json
 import os
 from datetime import datetime, timezone
-from pathlib import Path
 from glob import glob
 
 
@@ -62,11 +61,11 @@ def run_review_cli(evidence_review_dir: str) -> None:
         print("\nNo pending evidence review records found. All verdicts complete.")
         sys.exit(0)
 
-    print(f"\n{'='*60}")
-    print(f"HUMAN EVIDENCE REVIEW")
+    print(f"\n{'=' * 60}")
+    print("HUMAN EVIDENCE REVIEW")
     print(f"Reviewer: {reviewer_id} ({reviewer_role})")
     print(f"Pending: {len(pending)} claims")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     completed = rejected = revised = recheck = 0
 
@@ -142,8 +141,8 @@ def run_review_cli(evidence_review_dir: str) -> None:
             json.dump(record, f, indent=2)
 
     remaining = len([f for f in pending_files if _needs_review(f)])
-    print(f"\n{'='*60}")
-    print(f"Review session complete.")
+    print(f"\n{'=' * 60}")
+    print("Review session complete.")
     print(f"  Accepted:   {completed}")
     print(f"  Revised:    {revised}")
     print(f"  Rejected:   {rejected}")

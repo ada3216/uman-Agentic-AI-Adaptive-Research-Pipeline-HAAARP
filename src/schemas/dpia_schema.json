@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Signed DPIA Record",
+  "type": "object",
+  "required": [
+    "document_type",
+    "sensitivity_class",
+    "local_execution_confirmed",
+    "dpo_sign_off",
+    "dpia_complete"
+  ],
+  "properties": {
+    "document_type": {
+      "type": "string",
+      "const": "dpia_signed"
+    },
+    "schema_version": {
+      "type": ["string", "null"]
+    },
+    "sensitivity_class": {
+      "type": "string",
+      "enum": ["special_category"]
+    },
+    "local_execution_confirmed": {
+      "type": "boolean"
+    },
+    "dpia_complete": {
+      "type": "boolean",
+      "const": true
+    },
+    "dpo_sign_off": {
+      "type": "object",
+      "required": ["dpo_name", "decision", "signature_date"],
+      "properties": {
+        "dpo_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dpo_email": {
+          "type": ["string", "null"]
+        },
+        "decision": {
+          "type": "string",
+          "const": "approved"
+        },
+        "conditions": {
+          "type": ["string", "null"]
+        },
+        "signature_date": {
+          "type": "string"
+        },
+        "signature_timestamp_utc": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

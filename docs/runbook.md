@@ -12,14 +12,16 @@ Before running anything:
 
 1. **Install dependencies**
    ```bash
-   pip install -r requirements.txt
+  python3 -m venv .venv
+  . .venv/bin/activate
+  pip install -r requirements.txt
    ```
 
 2. **Install Ollama** (local model runner)
    - Download from [https://ollama.com](https://ollama.com)
    - Start Ollama: `ollama serve`
-   - Pull the analysis model: `ollama pull qwen2.5-27b-instruct`
-   - Test it's working: `ollama run qwen2.5-27b-instruct "Hello"`
+  - Pull the analysis model: `ollama pull qwen2.5-27b-instruct`
+  - Test it's working: `ollama run qwen2.5-27b-instruct "Hello"`
 
 3. **Configure the pipeline**
    ```bash

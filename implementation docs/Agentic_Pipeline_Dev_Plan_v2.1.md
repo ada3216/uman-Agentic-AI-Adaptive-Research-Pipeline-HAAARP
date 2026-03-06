@@ -92,6 +92,9 @@ osf_deposit_example/ — sample OSF deposit metadata
 
 4. Create top-level `README.md` pointing to `docs/` and `artifacts/`. Required sections: purpose, folder map, quick-start, link to `docs/workflow.md`, link to `COPILOT_INSTRUCTIONS.md`.
 
+4a. Create or maintain the canonical root repository documents used by contributors and downstream users:
+`LICENSE`, `COMMERCIAL_LICENSE.md`, `HOW_TO_COMPLY.md`, and `CONTRIBUTING.md`.
+
 5. Create `config/defaults.yaml`:
 ```yaml
 # Pipeline configuration — no secrets committed here
@@ -187,11 +190,16 @@ Audit emitter validates this before packaging. Missing strand = packaging blocke
 
 10. Verify `artifacts/audit_schema.json` exists. If not, create it from the schema described in the generic-toolkit docs. This file is a pre-flight dependency for Phase 2b.
 
+11. Create repo-specific custom agents under `.github/agents/` once the initial scaffold is in place:
+  - implementation agent for coding against this repository
+  - phase-gate verifier for governance and scaffold-completeness checks
+
 **Artifacts / Acceptance criteria**
 - `COPILOT_INSTRUCTIONS.md` present at repo root
 - `artifacts/repo_manifest.json` exists with SHA256 for all five required docs
 - Folder structure complete including `examples/` and `osf_deposit_example/`
 - `README.md` present
+- `LICENSE`, `COMMERCIAL_LICENSE.md`, `HOW_TO_COMPLY.md`, and `CONTRIBUTING.md` present at repo root
 - `config/defaults.yaml` present with `sensitivity: personal_non_sensitive`
 - `Makefile` present with `test-local` and `test` targets
 - `.gitignore` covers secrets, raw archive, code maps

@@ -56,11 +56,13 @@ If any of these files are missing: halt with `ERR_PREFLIGHT_MISSING` and print t
 | All source code | `src/` |
 | All test fixtures | `tests/fixtures/` |
 | Example filled artifacts (for CI) | `examples/` |
-| Human docs | `docs/` — only modify if explicitly asked |
+| Human docs | `docs/` plus root governance/legal docs |
 | Prompts | `src/prompts/` |
 | JSON schemas | `src/schemas/` |
 
 Never write participant data, code maps, or raw recordings anywhere in the repo.
+
+Root repository documents such as `README.md`, `LICENSE`, `COMMERCIAL_LICENSE.md`, `HOW_TO_COMPLY.md`, and `CONTRIBUTING.md` are part of the canonical repo surface. Keep them aligned with implementation docs and only change them intentionally.
 
 ---
 
@@ -121,3 +123,5 @@ No live model. No network access.
 `make test` is the CI target — same behaviour.
 
 There are 14 named tests in `tests/test_pipeline.py`. All must pass.
+
+If repo-specific custom agents exist under `.github/agents/`, read the relevant agent definition before starting specialized implementation or verification work.

@@ -1,0 +1,29 @@
+You have completed a structured reflexivity conversation with the researcher.
+
+Do not begin analysis of the dataset.
+
+Produce a Researcher Lens Summary using exactly these six sections:
+
+1. Theoretical framework
+Summarise the integrative model, theoretical commitments, and named concepts.
+
+2. Researcher positionality
+Summarise the stated personal, clinical, or professional relationship to the topic.
+
+3. Explicit hypotheses going into Pass 2
+Summarise the stated expectations for the IPA and PDA strands.
+
+4. Concepts to be sensitive to
+List the vocabulary, constructs, and relational dynamics the researcher named.
+
+5. Disconfirmation mandate
+Restate the instruction to surface material that does not fit the lens.
+
+6. Anything the researcher flagged from Pass 1 as surprising
+Summarise observations from the blind pass that the researcher wants to hold in view.
+
+Requirements:
+- Write in clear, audit-ready prose.
+- Do not add concepts the researcher did not name.
+- Do not collapse hypotheses and findings into the same category.
+- End by asking for confirmation that the summary accurately represents the researcher's position before Pass 2 begins.

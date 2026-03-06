@@ -17,7 +17,6 @@ Exit codes: see docs/error_codes.md
 import sys
 import json
 import hashlib
-import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -35,8 +34,10 @@ def _gate_check(deid_path: str, lens_path: str, pass1_hash: str,
     """Run all precondition checks. Exit with correct code on any failure."""
 
     # (a) anchor exists
-    anchor_path = f"artifacts/pass1_anchor_{dataset_id}.json"
-    if not Path(anchor_path).exists():
+    default_anchor_path = Path("artifacts") / f"pass1_anchor_{dataset_id}.json"
+    lens_anchor_path = Path(lens_path).parent / f"pass1_anchor_{dataset_id}.json"
+    anchor_path = lens_anchor_path if lens_anchor_path.exists() else default_anchor_path
+    if not anchor_path.exists():
         print(f"[ERR_PASS1_ANCHOR_MISSING] {anchor_path} not found.")
         print("Action: Run pass1_runner.py first, deposit to OSF, then retry Pass 2.")
         sys.exit(3)
@@ -129,9 +130,9 @@ def compute_stability_metrics(output_paths: list) -> dict:
     TODO: implement comparison logic across 4 output files.
     """
     return {
-        "theme_stability_score": None,   # TODO: proportion of themes stable across >=2/3 runs
-        "jaccard_mean": None,            # TODO: mean |A∩B|/|A∪B| across run pairs
-        "jaccard_pairs": [],             # TODO: per-pair scores
-        "lens_amplification_index": None, # TODO: proportion new Pass2 obs supported only by lens vocab
-        "unstable_themes": [],           # TODO: themes in <2/3 runs; labelled provisional
+        "theme_stability_score": None,  # TODO: proportion of themes stable across >=2/3 runs
+        "jaccard_mean": None,  # TODO: mean |A∩B|/|A∪B| across run pairs
+        "jaccard_pairs": [],  # TODO: per-pair scores
+        "lens_amplification_index": None,  # TODO: new Pass2 obs supported only by lens vocab
+        "unstable_themes": [],  # TODO: themes in <2/3 runs; labelled provisional
     }

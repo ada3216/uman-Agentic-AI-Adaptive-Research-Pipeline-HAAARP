@@ -8,7 +8,6 @@ Exit codes: see docs/error_codes.md
 """
 import sys
 import json
-import hashlib
 from pathlib import Path
 
 
@@ -57,7 +56,7 @@ class Orchestrator:
                     "ERR_PREFLIGHT_MISSING",
                     f"Required document not found: {path} ({desc})",
                     f"Provide this file before running the pipeline.\n"
-                    f"If HTML version exists: pandoc {path.replace('.md','.html')} -o {path}"
+                    f"If HTML version exists: pandoc {path.replace('.md', '.html')} -o {path}"
                 )
 
     def check_sensitivity(self, sensitivity: str) -> None:
@@ -87,8 +86,10 @@ class Orchestrator:
             )
         with open(dpia_path) as f:
             dpia = json.load(f)
-        if not (dpia.get("dpia_complete") and
-                dpia.get("dpo_sign_off", {}).get("decision") == "approved"):
+        if not (
+            dpia.get("dpia_complete")
+            and dpia.get("dpo_sign_off", {}).get("decision") == "approved"
+        ):
             pipeline_error(
                 "ERR_DPIA_INVALID",
                 "dpia_signed.json is missing required fields.",

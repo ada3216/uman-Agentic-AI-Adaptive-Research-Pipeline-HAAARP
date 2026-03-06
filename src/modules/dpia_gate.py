@@ -32,13 +32,6 @@ def check_dpia_required(sensitivity: str, dpia_path: str = "artifacts/dpia_signe
             print("Action: Check the file format against examples/dpia_signed.json.\n")
             sys.exit(2)
 
-    required_fields = {
-        "dpia_complete": True,
-        "dpo_sign_off.decision": "approved",
-        "dpo_sign_off.dpo_name": None,       # must be non-null
-        "dpo_sign_off.signature_date": None,  # must be non-null
-    }
-
     dpo = dpia.get("dpo_sign_off", {})
     if not dpia.get("dpia_complete"):
         print("\n[ERR_DPIA_INVALID] dpia_complete is not true.")

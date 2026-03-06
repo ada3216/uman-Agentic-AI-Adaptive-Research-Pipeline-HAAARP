@@ -34,9 +34,6 @@ def emit_audit_bundle(run_id: str, dataset_id: str, config: dict) -> dict:
     """
     Path("artifacts").mkdir(exist_ok=True)
 
-    # ── Validation pass ────────────────────────────────────────────────────
-    errors = []
-
     # 1. Check anchor is not local
     anchor_path = f"artifacts/pass1_anchor_{dataset_id}.json"
     anchor = {}
@@ -44,7 +41,7 @@ def emit_audit_bundle(run_id: str, dataset_id: str, config: dict) -> dict:
         with open(anchor_path) as f:
             anchor = json.load(f)
         if anchor.get("anchor_type") == "local":
-            print(f"\n[ERR_ANCHOR_LOCAL_AT_BUNDLE] pass1_anchor has anchor_type: local.")
+            print("\n[ERR_ANCHOR_LOCAL_AT_BUNDLE] pass1_anchor has anchor_type: local.")
             print("Action: Complete OSF deposit (Step 4 in docs/runbook.md) before emitting audit bundle.")
             sys.exit(5)
 
@@ -76,11 +73,11 @@ def emit_audit_bundle(run_id: str, dataset_id: str, config: dict) -> dict:
         sys.exit(5)
 
     # 3. Check strand labels on all key artifacts
-    strand_required = (
-        glob("artifacts/pass1_output_*.json") +
-        glob("artifacts/pass2_output_*.json") +
-        review_files
-    )
+    strand_required = [
+        *glob("artifacts/pass1_output_*.json"),
+        *glob("artifacts/pass2_output_*.json"),
+        *review_files,
+    ]
     missing_strand = []
     for af in strand_required:
         try:
@@ -118,15 +115,16 @@ def emit_audit_bundle(run_id: str, dataset_id: str, config: dict) -> dict:
         hallucination_rate = table.get("hallucination_count", 0) / max(total, 1)
 
     # Files to include in bundle
-    bundle_files = (
-        ["artifacts/repo_manifest.json", anchor_path] +
-        glob(f"artifacts/lens_*{run_id}*.json") +
-        glob(f"artifacts/pass2_output_*_{dataset_id}.json") +
-        ([stability_path] if Path(stability_path).exists() else []) +
-        glob(f"artifacts/lens_delta_report_*_{dataset_id}.md") +
-        ([table_path] if Path(table_path).exists() else []) +
-        review_files
-    )
+    bundle_files = [
+        "artifacts/repo_manifest.json",
+        anchor_path,
+        *glob(f"artifacts/lens_*{run_id}*.json"),
+        *glob(f"artifacts/pass2_output_*_{dataset_id}.json"),
+        *([stability_path] if Path(stability_path).exists() else []),
+        *glob(f"artifacts/lens_delta_report_*_{dataset_id}.md"),
+        *([table_path] if Path(table_path).exists() else []),
+        *review_files,
+    ]
     bundle_files = [f for f in bundle_files if Path(f).exists()]
 
     # ── Package ────────────────────────────────────────────────────────────
@@ -169,8 +167,8 @@ def emit_audit_bundle(run_id: str, dataset_id: str, config: dict) -> dict:
     with open(metadata_path, "w") as f:
         json.dump(metadata, f, indent=2)
 
-    print(f"\n{'='*60}")
-    print(f"AUDIT BUNDLE COMPLETE")
+    print(f"\n{'=' * 60}")
+    print("AUDIT BUNDLE COMPLETE")
     print(f"  Bundle:      {bundle_path}")
     print(f"  SHA256:      {bundle_sha256}")
     print(f"  Metadata:    {metadata_path}")
